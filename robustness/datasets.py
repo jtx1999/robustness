@@ -486,6 +486,29 @@ class OpenImages(DataSet):
             raise ValueError('OpenImages does not support pytorch_pretrained=True')
         return imagenet_models.__dict__[arch](num_classes=self.num_classes)
 
+class LSUN(DataSet):
+    def __init__(self, data_path, **kwargs):
+        """
+        """
+        ds_kwargs = {
+            'num_classes': 10,
+            'mean': ch.tensor([0.485, 0.456, 0.406]),
+            'std': ch.tensor([0.229, 0.224, 0.225]),
+            'custom_class': datasets.LSUN,
+            'label_mapping': None,
+            'transform_train': da.TRAIN_TRANSFORMS_IMAGENET,
+            'transform_test': da.TEST_TRANSFORMS_IMAGENET
+        }
+        ds_kwargs = self.override_args(ds_kwargs, kwargs)
+        super(LSUN, self).__init__('lsun', data_path, **ds_kwargs)
+
+    def get_model(self, arch, pretrained):
+        """
+        """
+        if pretrained:
+            raise ValueError('LSUN does not support pytorch_pretrained=True')
+        return imagenet_models.__dict__[arch](num_classes=self.num_classes)
+
 DATASETS = {
     'imagenet': ImageNet,
     'restricted_imagenet': RestrictedImageNet,
@@ -494,7 +517,8 @@ DATASETS = {
     'cinic': CINIC,
     'a2b': A2B,
     'places365': Places365,
-    'openimages': OpenImages
+    'openimages': OpenImages,
+    'LSUN': LSUN,
 }
 '''
 Dictionary of datasets. A dataset class can be accessed as:

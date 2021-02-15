@@ -60,17 +60,26 @@ def make_loaders(workers, batch_size, transforms, data_path, data_aug=True,
                                       label_mapping=label_mapping)
     else:
         if custom_class_args is None: custom_class_args = {}
-        if not only_val:
-            train_set = custom_class(root=data_path, train=True, download=True, 
-                                transform=transform_train, **custom_class_args)
-        test_set = custom_class(root=data_path, train=False, download=True, 
-                                transform=transform_test, **custom_class_args)
+        if "lsun" in dataset:
+            if not only_val:
+                train_set = custom_class(root=data_path, classes="train", 
+                                    transform=transform_train, **custom_class_args)
+            test_set = custom_class(root=data_path, classes="val",
+                                    transform=transform_test, **custom_class_args)
+        else:
+            if not only_val:
+                train_set = custom_class(root=data_path, train=True, download=True, 
+                                    transform=transform_train, **custom_class_args)
+            test_set = custom_class(root=data_path, train=False, download=True, 
+                                    transform=transform_test, **custom_class_args)
 
     if not only_val:
         attrs = ["samples", "train_data", "data"]
         vals = {attr: hasattr(train_set, attr) for attr in attrs}
-        assert any(vals.values()), f"dataset must expose one of {attrs}"
-        train_sample_count = len(getattr(train_set,[k for k in vals if vals[k]][0]))
+        if any(vals.values()):
+            train_sample_count = len(getattr(train_set,[k for k in vals if vals[k]][0]))
+        else:
+            train_sample_count = len(train_set)
 
     if (not only_val) and (subset is not None) and (subset <= train_sample_count):
         assert not only_val
